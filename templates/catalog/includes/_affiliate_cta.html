@@ -1,0 +1,15 @@
+{# Expects: product (Product instance) #}
+<div class="card bg-primary/5 border border-primary/20">
+  <div class="card-body items-center text-center gap-3">
+    <h3 class="font-semibold text-lg">{{ product.title }}</h3>
+    <div class="text-2xl font-bold">{{ product.currency }} {{ product.price }}</div>
+    <a href="{% url 'catalog:affiliate-go' product.slug %}" target="_blank" rel="noopener noreferrer"
+       class="btn btn-primary gap-2">
+      Check Price
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+    </a>
+    <p class="text-xs text-base-content/40 mt-1">
+      As an affiliate we may earn from qualifying purchases.
+    </p>
+  </div>
+</div>

@@ -1,0 +1,31 @@
+{# Expects: product (Product instance), trend_entry (TrendEntry|None, optional) #}
+<div class="card bg-base-100 shadow-md border border-base-300 h-full">
+  {% if product.image_url %}
+  <figure class="relative">
+    <img src="{{ product.image_url }}" alt="{{ product.title }}" class="h-48 w-full object-cover" loading="lazy">
+    {% if trend_entry %}
+    <div class="absolute top-2 right-2">
+      {% include "catalog/includes/_trend_badge.html" with score=trend_entry.trend_score %}
+    </div>
+    {% endif %}
+  </figure>
+  {% endif %}
+  <div class="card-body">
+    <h3 class="card-title text-base">
+      <a href="{{ product.get_absolute_url }}" class="hover:underline">{{ product.title }}</a>
+    </h3>
+    <p class="text-xs text-base-content/50">
+      <a href="{{ product.brand.get_absolute_url }}" class="hover:underline">{{ product.brand.name }}</a>
+    </p>
+
+    {% if trend_entry %}
+    <p class="text-sm text-base-content/70 mt-1">{{ trend_entry.why_trending|truncatewords:20 }}</p>
+    {% endif %}
+
+    <div class="card-actions justify-between items-center mt-auto pt-3">
+      <span class="text-lg font-bold">{{ product.currency }} {{ product.price }}</span>
+      <a href="{% url 'catalog:affiliate-go' product.slug %}" target="_blank" rel="noopener noreferrer"
+         class="btn btn-primary btn-sm">Check Price &rarr;</a>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Trending — TrendTry{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-8">Trending Products</h1>
+
+{% if trends %}
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+  {% for trend in trends %}
+    {% include "catalog/includes/_product_card.html" with product=trend.product trend_entry=trend %}
+  {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<div class="flex justify-center mt-10">
+  <div class="join">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}" class="join-item btn">«</a>
+    {% endif %}
+    {% for num in page_obj.paginator.page_range %}
+      {% if num == page_obj.number %}
+      <button class="join-item btn btn-active">{{ num }}</button>
+      {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+      <a href="?page={{ num }}" class="join-item btn">{{ num }}</a>
+      {% endif %}
+    {% endfor %}
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}" class="join-item btn">»</a>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+{% else %}
+<div class="text-center py-16 text-base-content/50">
+  <p class="text-lg">No trending products yet.</p>
+</div>
+{% endif %}
+{% endblock %}

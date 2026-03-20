@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}{{ usecase.title }} — TrendTry{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<div class="breadcrumbs text-sm mb-6">
+  <ul>
+    <li><a href="{% url 'catalog:home' %}">Home</a></li>
+    <li>{{ usecase.title }}</li>
+  </ul>
+</div>
+
+<h1 class="text-3xl font-bold mb-2">{{ usecase.title }}</h1>
+
+<!-- Meta badges -->
+<div class="flex flex-wrap gap-3 mb-8">
+  <div class="badge badge-lg badge-outline">Audience: {{ usecase.audience }}</div>
+  <div class="badge badge-lg badge-outline">Budget: up to ${{ usecase.budget_max }}</div>
+</div>
+
+<!-- Top Picks -->
+<h2 class="text-xl font-semibold mb-4">Top Picks</h2>
+{% with picks=usecase.top_picks.all %}
+{% if picks %}
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+  {% for product in picks %}
+  <div class="card bg-base-100 shadow-md border border-base-300">
+    {% if product.image_url %}
+    <figure><img src="{{ product.image_url }}" alt="{{ product.title }}" class="h-48 w-full object-cover"></figure>
+    {% endif %}
+    <div class="card-body">
+      <h3 class="card-title text-base">{{ product.title }}</h3>
+      <p class="text-xs text-base-content/50">{{ product.brand.name }}</p>
+      <div class="card-actions justify-between items-center mt-2">
+        <span class="font-semibold">{{ product.currency }} {{ product.price }}</span>
+        <a href="{{ product.get_absolute_url }}" class="btn btn-sm btn-outline">View</a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p class="text-base-content/50 mb-10">No picks yet.</p>
+{% endif %}
+{% endwith %}
+
+<!-- Cautions -->
+{% if usecase.cautions %}
+<div class="card bg-warning/10 border border-warning/20">
+  <div class="card-body">
+    <h2 class="card-title">Cautions</h2>
+    <div class="prose max-w-none">{{ usecase.cautions|linebreaksbr }}</div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

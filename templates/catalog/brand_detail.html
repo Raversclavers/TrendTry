@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}{{ brand.name }} — TrendTry{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<div class="breadcrumbs text-sm mb-6">
+  <ul>
+    <li><a href="{% url 'catalog:home' %}">Home</a></li>
+    <li>{{ brand.name }}</li>
+  </ul>
+</div>
+
+<!-- Brand header -->
+<div class="flex items-center gap-4 mb-8">
+  {% if brand.logo_url %}
+  <img src="{{ brand.logo_url }}" alt="{{ brand.name }}" class="w-16 h-16 rounded-full object-cover border border-base-300">
+  {% endif %}
+  <div>
+    <h1 class="text-3xl font-bold">{{ brand.name }}</h1>
+    <div class="flex gap-2 mt-1">
+      <span class="badge">{{ brand.get_category_display }}</span>
+      {% if brand.domain %}
+      <span class="text-sm text-base-content/50">{{ brand.domain }}</span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Products grid -->
+<h2 class="text-xl font-semibold mb-4">Products</h2>
+{% if products %}
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+  {% for product in products %}
+  <div class="card bg-base-100 shadow-md border border-base-300">
+    {% if product.image_url %}
+    <figure><img src="{{ product.image_url }}" alt="{{ product.title }}" class="h-48 w-full object-cover"></figure>
+    {% endif %}
+    <div class="card-body">
+      <h3 class="card-title text-base">{{ product.title }}</h3>
+      <div class="card-actions justify-between items-center mt-2">
+        <span class="font-semibold">{{ product.currency }} {{ product.price }}</span>
+        <a href="{{ product.get_absolute_url }}" class="btn btn-sm btn-outline">View</a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p class="text-base-content/50">No active products for this brand.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}TrendTry — Creator Desk Accessories &amp; Small Tech Gadgets{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="hero bg-base-200 rounded-box mb-10 py-12 px-6 text-center">
+  <div class="hero-content flex-col">
+    <h1 class="text-4xl font-bold">Discover What's Trending</h1>
+    <p class="max-w-lg text-base-content/70">
+      Curated desk accessories and small tech gadgets creators are actually using.
+    </p>
+    <a href="{% url 'catalog:trending' %}" class="btn btn-primary mt-4">Browse Trending</a>
+  </div>
+</section>
+
+<!-- Trending -->
+<section class="mb-12">
+  <h2 class="text-2xl font-semibold mb-6">Trending Now</h2>
+  {% if trends %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for trend in trends %}
+    <div class="card bg-base-100 shadow-md border border-base-300">
+      {% if trend.product.image_url %}
+      <figure><img src="{{ trend.product.image_url }}" alt="{{ trend.product.title }}" class="h-48 w-full object-cover"></figure>
+      {% endif %}
+      <div class="card-body">
+        <h3 class="card-title text-lg">{{ trend.product.title }}</h3>
+        <div class="badge badge-primary">{{ trend.trend_score }}/10</div>
+        <p class="text-sm text-base-content/70 mt-1">{{ trend.why_trending|truncatewords:20 }}</p>
+        <div class="card-actions justify-between items-center mt-3">
+          <span class="font-semibold">{{ trend.product.currency }} {{ trend.product.price }}</span>
+          <a href="{{ trend.product.get_absolute_url }}" class="btn btn-sm btn-outline">View</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="text-base-content/50">No trending products yet.</p>
+  {% endif %}
+</section>
+
+<!-- Comparisons -->
+<section class="mb-12">
+  <h2 class="text-2xl font-semibold mb-6">Featured Comparisons</h2>
+  {% if comparisons %}
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    {% for comp in comparisons %}
+    <a href="{{ comp.get_absolute_url }}" class="card bg-base-100 shadow-md border border-base-300 hover:shadow-lg transition-shadow">
+      <div class="card-body">
+        <h3 class="card-title text-base">{{ comp.title }}</h3>
+        <p class="text-sm text-base-content/60">
+          {{ comp.product_a.title }} vs {{ comp.product_b.title }}
+        </p>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="text-base-content/50">No comparisons yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

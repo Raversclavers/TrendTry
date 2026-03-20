@@ -1,0 +1,36 @@
+{# Expects: usecase (UseCasePage instance) #}
+<div class="card bg-base-100 shadow-md border border-base-300 h-full">
+  <div class="card-body">
+    <h3 class="card-title text-base">
+      <a href="{{ usecase.get_absolute_url }}" class="hover:underline">{{ usecase.title }}</a>
+    </h3>
+    <div class="flex flex-wrap gap-2 mt-1">
+      <span class="badge badge-outline badge-sm">{{ usecase.audience }}</span>
+      <span class="badge badge-outline badge-sm">Up to ${{ usecase.budget_max }}</span>
+    </div>
+
+    {# Show first 3 top-pick thumbnails #}
+    {% with picks=usecase.top_picks.all|slice:":3" %}
+    {% if picks %}
+    <div class="flex gap-2 mt-3">
+      {% for product in picks %}
+      <a href="{{ product.get_absolute_url }}" class="tooltip" data-tip="{{ product.title }}">
+        {% if product.image_url %}
+        <img src="{{ product.image_url }}" alt="{{ product.title }}"
+             class="w-16 h-16 rounded-lg object-cover border border-base-300" loading="lazy">
+        {% else %}
+        <div class="w-16 h-16 rounded-lg bg-base-200 flex items-center justify-center text-xs text-base-content/40">
+          No img
+        </div>
+        {% endif %}
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <div class="card-actions mt-auto pt-3">
+      <a href="{{ usecase.get_absolute_url }}" class="btn btn-outline btn-sm btn-block">View Guide</a>
+    </div>
+  </div>
+</div>

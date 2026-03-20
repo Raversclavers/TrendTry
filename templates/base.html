@@ -1,0 +1,57 @@
+{% load static meta %}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}TrendTry{% endblock %}</title>
+  {% if meta %}{% include "meta/meta.html" %}{% endif %}
+  <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}">
+  <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-screen flex flex-col bg-base-100 text-base-content">
+
+  <!-- Navbar -->
+  <header class="navbar bg-base-200 shadow-sm px-4 lg:px-8">
+    <div class="flex-1">
+      <a href="/" class="btn btn-ghost text-xl font-bold tracking-tight">
+        TrendTry
+      </a>
+    </div>
+    <nav class="flex-none">
+      <ul class="menu menu-horizontal gap-1 px-1">
+        <li><a href="{% url 'catalog:trending' %}">Trending</a></li>
+        <li><a href="{% url 'pages:contact' %}">Compare</a></li>
+        <li><a href="{% url 'pages:contact' %}">Best Picks</a></li>
+        <li><a href="{% url 'pages:contact' %}">Brands</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Main content -->
+  <main class="flex-1 container mx-auto px-4 py-8">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer footer-center bg-base-200 text-base-content p-6">
+    <div class="w-full max-w-md mx-auto mb-4">
+      {% include "catalog/includes/_newsletter.html" %}
+    </div>
+    <nav class="flex gap-6">
+      <a href="{% url 'pages:affiliate-disclosure' %}" class="link link-hover text-sm">
+        Affiliate Disclosure
+      </a>
+      <a href="{% url 'pages:contact' %}" class="link link-hover text-sm">
+        Contact
+      </a>
+    </nav>
+    <aside>
+      <p class="text-xs opacity-70">&copy; {{ year }} TrendTry. All rights reserved.</p>
+    </aside>
+  </footer>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

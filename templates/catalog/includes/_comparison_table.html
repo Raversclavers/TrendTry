@@ -1,0 +1,41 @@
+{# Expects: comparison (Comparison instance) #}
+<div class="overflow-x-auto">
+  <table class="table table-zebra w-full">
+    <thead>
+      <tr>
+        <th class="w-24"></th>
+        <th>{{ comparison.product_a.title }}</th>
+        <th>{{ comparison.product_b.title }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="font-semibold text-success align-top">Pros</td>
+        <td class="whitespace-pre-line">{{ comparison.pros_a }}</td>
+        <td class="whitespace-pre-line">{{ comparison.pros_b }}</td>
+      </tr>
+      <tr>
+        <td class="font-semibold text-error align-top">Cons</td>
+        <td class="whitespace-pre-line">{{ comparison.cons_a }}</td>
+        <td class="whitespace-pre-line">{{ comparison.cons_b }}</td>
+      </tr>
+      <tr>
+        <td class="font-semibold align-top">Price</td>
+        <td>{{ comparison.product_a.currency }} {{ comparison.product_a.price }}</td>
+        <td>{{ comparison.product_b.currency }} {{ comparison.product_b.price }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+{% if comparison.winner_for %}
+<div class="card bg-success/10 border border-success/20 mt-6">
+  <div class="card-body">
+    <h3 class="card-title text-base">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-success" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      Who Should Pick What?
+    </h3>
+    <div class="prose prose-sm max-w-none">{{ comparison.winner_for|linebreaksbr }}</div>
+  </div>
+</div>
+{% endif %}

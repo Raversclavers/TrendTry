@@ -1,0 +1,16 @@
+{# Newsletter signup — include anywhere. Uses HTMX for no-reload submit. #}
+<div class="card bg-base-200 border border-base-300">
+  <div class="card-body items-center text-center gap-3">
+    <h3 class="font-semibold text-lg">Stay in the loop</h3>
+    <p class="text-sm text-base-content/60">Get trending products & deals in your inbox.</p>
+    <form hx-post="{% url 'catalog:subscribe' %}" hx-target="#subscribe-result" hx-swap="innerHTML"
+          class="flex gap-2 w-full max-w-sm">
+      {% csrf_token %}
+      <input type="hidden" name="source_page" value="{{ request.path }}">
+      <input type="email" name="email" required placeholder="you@example.com"
+             class="input input-bordered flex-1">
+      <button type="submit" class="btn btn-primary btn-sm">Subscribe</button>
+    </form>
+    <div id="subscribe-result" class="text-sm"></div>
+  </div>
+</div>

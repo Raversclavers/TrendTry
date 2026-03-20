@@ -1,0 +1,16 @@
+{# Expects: score (int 1–10) #}
+{% if score >= 8 %}
+<span class="badge badge-error font-semibold gap-1">
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a.75.75 0 01.67.42l1.76 3.56 3.93.57a.75.75 0 01.42 1.28l-2.85 2.77.67 3.91a.75.75 0 01-1.09.79L10 13.35l-3.51 1.85a.75.75 0 01-1.09-.79l.67-3.91L3.22 7.73a.75.75 0 01.42-1.28l3.93-.57 1.76-3.56A.75.75 0 0110 2z"/></svg>
+  Hot {{ score }}/10
+</span>
+{% elif score >= 5 %}
+<span class="badge badge-warning font-semibold gap-1">
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+  Rising {{ score }}/10
+</span>
+{% else %}
+<span class="badge badge-info font-semibold gap-1">
+  Steady {{ score }}/10
+</span>
+{% endif %}

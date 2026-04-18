@@ -1,41 +1,57 @@
 {# Expects: comparison (Comparison instance) #}
-<div class="overflow-x-auto">
-  <table class="table table-zebra w-full">
-    <thead>
-      <tr>
-        <th class="w-24"></th>
-        <th>{{ comparison.product_a.title }}</th>
-        <th>{{ comparison.product_b.title }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td class="font-semibold text-success align-top">Pros</td>
-        <td class="whitespace-pre-line">{{ comparison.pros_a }}</td>
-        <td class="whitespace-pre-line">{{ comparison.pros_b }}</td>
-      </tr>
-      <tr>
-        <td class="font-semibold text-error align-top">Cons</td>
-        <td class="whitespace-pre-line">{{ comparison.cons_a }}</td>
-        <td class="whitespace-pre-line">{{ comparison.cons_b }}</td>
-      </tr>
-      <tr>
-        <td class="font-semibold align-top">Price</td>
-        <td>{{ comparison.product_a.currency }} {{ comparison.product_a.price }}</td>
-        <td>{{ comparison.product_b.currency }} {{ comparison.product_b.price }}</td>
-      </tr>
-    </tbody>
-  </table>
+<div class="rounded-2xl border border-base-200 overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-base-200 bg-base-200/50">
+          <th class="w-24 p-4 text-left text-xs font-semibold uppercase tracking-wider text-base-content/40"></th>
+          <th class="p-4 text-left font-bold">{{ comparison.product_a.title }}</th>
+          <th class="p-4 text-left font-bold">{{ comparison.product_b.title }}</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-base-200">
+        <tr>
+          <td class="p-4 align-top">
+            <span class="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-emerald-600">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              Pros
+            </span>
+          </td>
+          <td class="p-4 align-top whitespace-pre-line text-base-content/70 leading-relaxed">{{ comparison.pros_a }}</td>
+          <td class="p-4 align-top whitespace-pre-line text-base-content/70 leading-relaxed">{{ comparison.pros_b }}</td>
+        </tr>
+        <tr>
+          <td class="p-4 align-top">
+            <span class="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-red-500">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+              Cons
+            </span>
+          </td>
+          <td class="p-4 align-top whitespace-pre-line text-base-content/70 leading-relaxed">{{ comparison.cons_a }}</td>
+          <td class="p-4 align-top whitespace-pre-line text-base-content/70 leading-relaxed">{{ comparison.cons_b }}</td>
+        </tr>
+        <tr class="bg-base-200/30">
+          <td class="p-4 align-top">
+            <span class="text-xs font-bold uppercase tracking-wider text-base-content/50">Price</span>
+          </td>
+          <td class="p-4 font-extrabold text-lg">{{ comparison.product_a.currency }}&nbsp;{{ comparison.product_a.price }}</td>
+          <td class="p-4 font-extrabold text-lg">{{ comparison.product_b.currency }}&nbsp;{{ comparison.product_b.price }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>
 
 {% if comparison.winner_for %}
-<div class="card bg-success/10 border border-success/20 mt-6">
-  <div class="card-body">
-    <h3 class="card-title text-base">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-success" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-      Who Should Pick What?
-    </h3>
-    <div class="prose prose-sm max-w-none">{{ comparison.winner_for|linebreaksbr }}</div>
+<div class="mt-8 rounded-2xl border border-emerald-200 bg-emerald-50/50 p-6 sm:p-8">
+  <div class="flex items-start gap-4">
+    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    </div>
+    <div>
+      <h3 class="text-base font-bold text-emerald-900 mb-2">Who Should Pick What?</h3>
+      <div class="text-sm text-emerald-800/80 leading-relaxed">{{ comparison.winner_for|linebreaksbr }}</div>
+    </div>
   </div>
 </div>
 {% endif %}

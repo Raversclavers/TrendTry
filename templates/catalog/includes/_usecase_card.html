@@ -1,36 +1,42 @@
 {# Expects: usecase (UseCasePage instance) #}
-<div class="card bg-base-100 shadow-md border border-base-300 h-full">
-  <div class="card-body">
-    <h3 class="card-title text-base">
-      <a href="{{ usecase.get_absolute_url }}" class="hover:underline">{{ usecase.title }}</a>
-    </h3>
-    <div class="flex flex-wrap gap-2 mt-1">
-      <span class="badge badge-outline badge-sm">{{ usecase.audience }}</span>
-      <span class="badge badge-outline badge-sm">Up to ${{ usecase.budget_max }}</span>
+<article class="card-hover group flex flex-col rounded-2xl border border-base-200 bg-base-100 p-6 h-full">
+  <div class="flex items-center gap-3 mb-4">
+    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
     </div>
-
-    {# Show first 3 top-pick thumbnails #}
-    {% with picks=usecase.top_picks.all|slice:":3" %}
-    {% if picks %}
-    <div class="flex gap-2 mt-3">
-      {% for product in picks %}
-      <a href="{{ product.get_absolute_url }}" class="tooltip" data-tip="{{ product.title }}">
-        {% if product.image_url %}
-        <img src="{{ product.image_url }}" alt="{{ product.title }}"
-             class="w-16 h-16 rounded-lg object-cover border border-base-300" loading="lazy">
-        {% else %}
-        <div class="w-16 h-16 rounded-lg bg-base-200 flex items-center justify-center text-xs text-base-content/40">
-          No img
-        </div>
-        {% endif %}
-      </a>
-      {% endfor %}
-    </div>
-    {% endif %}
-    {% endwith %}
-
-    <div class="card-actions mt-auto pt-3">
-      <a href="{{ usecase.get_absolute_url }}" class="btn btn-outline btn-sm btn-block">View Guide</a>
-    </div>
+    <span class="text-[11px] font-semibold uppercase tracking-wider text-base-content/35">Buying Guide</span>
   </div>
-</div>
+
+  <h3 class="text-base font-bold leading-snug mb-3">
+    <a href="{{ usecase.get_absolute_url }}" class="group-hover:text-primary transition-colors">{{ usecase.title }}</a>
+  </h3>
+
+  <div class="flex flex-wrap gap-2 mb-4">
+    <span class="inline-flex items-center rounded-full bg-base-200 px-2.5 py-0.5 text-[11px] font-medium text-base-content/60">{{ usecase.audience }}</span>
+    <span class="inline-flex items-center rounded-full bg-base-200 px-2.5 py-0.5 text-[11px] font-medium text-base-content/60">Up to ${{ usecase.budget_max }}</span>
+  </div>
+
+  {# Show first 3 top-pick thumbnails #}
+  {% with picks=usecase.top_picks.all|slice:":3" %}
+  {% if picks %}
+  <div class="flex -space-x-2 mb-4">
+    {% for product in picks %}
+    {% if product.image_url %}
+    <img src="{{ product.image_url }}" alt="{{ product.title }}"
+         class="w-10 h-10 rounded-full object-cover border-2 border-base-100 ring-1 ring-base-200" loading="lazy">
+    {% else %}
+    <div class="w-10 h-10 rounded-full bg-base-200 border-2 border-base-100 flex items-center justify-center text-[10px] text-base-content/40 font-medium">?</div>
+    {% endif %}
+    {% endfor %}
+    <span class="flex items-center pl-3 text-xs text-base-content/40">{{ picks|length }} pick{{ picks|length|pluralize }}</span>
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  <div class="mt-auto pt-4">
+    <a href="{{ usecase.get_absolute_url }}" class="btn btn-outline btn-sm btn-block gap-1">
+      View Guide
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+</article>

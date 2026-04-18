@@ -1,15 +1,13 @@
 {# Expects: product (Product instance) #}
-<div class="card bg-primary/5 border border-primary/20">
-  <div class="card-body items-center text-center gap-3">
-    <h3 class="font-semibold text-lg">{{ product.title }}</h3>
-    <div class="text-2xl font-bold">{{ product.currency }} {{ product.price }}</div>
-    <a href="{% url 'catalog:affiliate-go' product.slug %}" target="_blank" rel="noopener noreferrer"
-       class="btn btn-primary gap-2">
-      Check Price
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-    </a>
-    <p class="text-xs text-base-content/40 mt-1">
-      As an affiliate we may earn from qualifying purchases.
-    </p>
-  </div>
+<div class="rounded-2xl border border-primary/20 bg-gradient-to-b from-primary/10 to-transparent p-8 text-center shadow-sm">
+  <p class="text-base font-semibold text-base-content/70 mb-2">{{ product.title }}</p>
+  <div class="text-4xl font-extrabold tracking-tight mb-6 text-neutral">{{ product.currency }}&nbsp;{{ product.price }}</div>
+  <a href="{% url 'catalog:affiliate-go' product.slug %}" target="_blank" rel="noopener noreferrer nofollow"
+     class="btn btn-primary btn-wide gap-2 shadow-md focus-visible:ring-2 focus-visible:ring-primary/60">
+    <span class="font-semibold">Check Price</span>
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+  </a>
+  <p class="text-xs text-base-content/40 mt-4 leading-relaxed">
+    As an affiliate we may earn from qualifying purchases.
+  </p>
 </div>

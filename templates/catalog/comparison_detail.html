@@ -3,27 +3,32 @@
 {% block title %}{{ comparison.title }} — TrendTry{% endblock %}
 
 {% block content %}
-<!-- Breadcrumb -->
-<div class="breadcrumbs text-sm mb-6">
-  <ul>
-    <li><a href="{% url 'catalog:home' %}">Home</a></li>
-    <li>{{ comparison.title }}</li>
-  </ul>
+{# Breadcrumb #}
+<nav class="mb-8 sm:mb-10" aria-label="Breadcrumb">
+  <ol class="flex flex-wrap items-center gap-1.5 text-sm text-base-content/40">
+    <li><a href="{% url 'catalog:home' %}" class="hover:text-base-content transition-colors">Home</a></li>
+    <li class="before:content-['/'] before:mx-1.5 text-base-content/70 font-medium">{{ comparison.title }}</li>
+  </ol>
+</nav>
+
+<div class="mb-12 sm:mb-16">
+  <span class="inline-block text-xs font-semibold uppercase tracking-wider text-primary mb-3">Head to Head</span>
+  <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">{{ comparison.title }}</h1>
 </div>
 
-<h1 class="text-3xl font-bold mb-8">{{ comparison.title }}</h1>
-
-<!-- Side-by-side product cards (stack on mobile) -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+{# Side-by-side product cards #}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 mb-14 sm:mb-18">
   {% include "catalog/includes/_product_card.html" with product=comparison.product_a trend_entry=None %}
   {% include "catalog/includes/_product_card.html" with product=comparison.product_b trend_entry=None %}
 </div>
 
-<!-- Pros / Cons comparison table -->
-{% include "catalog/includes/_comparison_table.html" with comparison=comparison %}
+{# Comparison table #}
+<div class="mb-14 sm:mb-18">
+  {% include "catalog/includes/_comparison_table.html" with comparison=comparison %}
+</div>
 
-<!-- Affiliate CTAs side by side -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
+{# Affiliate CTAs side by side #}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
   {% include "catalog/includes/_affiliate_cta.html" with product=comparison.product_a %}
   {% include "catalog/includes/_affiliate_cta.html" with product=comparison.product_b %}
 </div>

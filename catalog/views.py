@@ -1,4 +1,7 @@
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.db.models import F, Q
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 from django.views.generic import DetailView, ListView, TemplateView
@@ -32,10 +35,14 @@ class HomeView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["trends"] = (
-            TrendEntry.objects.select_related("product__brand")[:6]
+            TrendEntry.objects
+            .select_related("product__brand")
+            .filter(product__is_active=True)[:6]
         )
         ctx["comparisons"] = (
-            Comparison.objects.select_related("product_a__brand", "product_b__brand")[:3]
+            Comparison.objects
+            .select_related("product_a__brand", "product_b__brand")
+            .filter(product_a__is_active=True, product_b__is_active=True)[:3]
         )
         return ctx
 
@@ -109,6 +116,35 @@ class ComparisonDetailView(DetailView):
         return ctx
 
 
+class ComparisonListView(ListView):
+    model = Comparison
+    template_name = "catalog/comparison_list.html"
+    context_object_name = "comparisons"
+    paginate_by = 12
+
+    def get_queryset(self):
+        return Comparison.objects.select_related("product_a__brand", "product_b__brand")
+
+
+class BrandListView(ListView):
+    model = Brand
+    template_name = "catalog/brand_list.html"
+    context_object_name = "brands"
+
+    def get_queryset(self):
+        return Brand.objects.all()
+
+
+class UseCaseListView(ListView):
+    model = UseCasePage
+    template_name = "catalog/usecase_list.html"
+    context_object_name = "usecases"
+    paginate_by = 12
+
+    def get_queryset(self):
+        return UseCasePage.objects.prefetch_related("top_picks")
+
+
 class UseCasePageDetailView(DetailView):
     model = UseCasePage
     template_name = "catalog/usecase_detail.html"
@@ -154,10 +190,6 @@ class AffiliateRedirectView(View):
 # ---------------------------------------------------------------------------
 class SubscribeView(View):
     def post(self, request):
-        from django.core.validators import validate_email
-        from django.core.exceptions import ValidationError
-        from django.http import HttpResponse
-
         email = request.POST.get("email", "").strip().lower()
         source_page = request.POST.get("source_page", "")[:255]
 

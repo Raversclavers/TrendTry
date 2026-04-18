@@ -1,31 +1,42 @@
 {# Expects: product (Product instance), trend_entry (TrendEntry|None, optional) #}
-<div class="card bg-base-100 shadow-md border border-base-300 h-full">
+<article class="card-hover group flex flex-col rounded-2xl border border-base-200 bg-base-100 overflow-hidden h-full shadow-sm">
   {% if product.image_url %}
-  <figure class="relative">
-    <img src="{{ product.image_url }}" alt="{{ product.title }}" class="h-48 w-full object-cover" loading="lazy">
+  <a href="{{ product.get_absolute_url }}" class="relative block aspect-[4/3] overflow-hidden bg-base-200">
+    <img src="{{ product.image_url }}" alt="{{ product.title }}"
+         class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy">
     {% if trend_entry %}
-    <div class="absolute top-2 right-2">
+    <div class="absolute top-4 right-4">
       {% include "catalog/includes/_trend_badge.html" with score=trend_entry.trend_score %}
     </div>
     {% endif %}
-  </figure>
+  </a>
   {% endif %}
-  <div class="card-body">
-    <h3 class="card-title text-base">
-      <a href="{{ product.get_absolute_url }}" class="hover:underline">{{ product.title }}</a>
-    </h3>
-    <p class="text-xs text-base-content/50">
-      <a href="{{ product.brand.get_absolute_url }}" class="hover:underline">{{ product.brand.name }}</a>
-    </p>
 
-    {% if trend_entry %}
-    <p class="text-sm text-base-content/70 mt-1">{{ trend_entry.why_trending|truncatewords:20 }}</p>
-    {% endif %}
+  <div class="flex flex-col flex-1 p-6 gap-2">
+    <div class="mb-auto">
+      <a href="{{ product.brand.get_absolute_url }}"
+         class="text-xs font-semibold uppercase tracking-wider text-primary/80 hover:text-primary transition-colors">
+        {{ product.brand.name }}
+      </a>
+      <h3 class="mt-2 text-lg font-extrabold leading-tight">
+        <a href="{{ product.get_absolute_url }}" class="hover:text-primary transition-colors">
+          {{ product.title }}
+        </a>
+      </h3>
+      {% if trend_entry %}
+      <p class="mt-3 text-sm text-base-content/60 leading-relaxed line-clamp-2">
+        {{ trend_entry.why_trending|truncatewords:18 }}
+      </p>
+      {% endif %}
+    </div>
 
-    <div class="card-actions justify-between items-center mt-auto pt-3">
-      <span class="text-lg font-bold">{{ product.currency }} {{ product.price }}</span>
-      <a href="{% url 'catalog:affiliate-go' product.slug %}" target="_blank" rel="noopener noreferrer"
-         class="btn btn-primary btn-sm">Check Price &rarr;</a>
+    <div class="flex items-center justify-between mt-6 pt-4 border-t border-base-200">
+      <span class="text-xl font-extrabold tracking-tight text-neutral">{{ product.currency }}&nbsp;{{ product.price }}</span>
+      <a href="{% url 'catalog:affiliate-go' product.slug %}" target="_blank" rel="noopener noreferrer nofollow"
+         class="btn btn-primary btn-sm gap-2 shadow-md focus-visible:ring-2 focus-visible:ring-primary/60">
+        <span class="font-semibold">Check Price</span>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+      </a>
     </div>
   </div>
-</div>
+</article>

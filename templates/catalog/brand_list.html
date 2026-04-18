@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Brands — TrendTry{% endblock %}
+
+{% block content %}
+<div class="mb-12 sm:mb-16">
+  <span class="inline-block text-xs font-semibold uppercase tracking-wider text-primary mb-3">Explore</span>
+  <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">All Brands</h1>
+  <p class="mt-3 text-base-content/50 max-w-lg">Browse every brand we cover — gear trusted by content creators.</p>
+</div>
+
+{% if brands %}
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+  {% for brand in brands %}
+  <a href="{{ brand.get_absolute_url }}" class="card-hover group flex items-center gap-4 rounded-2xl border border-base-200 bg-base-100 p-5 sm:p-6">
+    {% if brand.logo_url %}
+    <img src="{{ brand.logo_url }}" alt="{{ brand.name }}"
+         class="w-14 h-14 rounded-xl object-cover border border-base-200 shrink-0" loading="lazy">
+    {% else %}
+    <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-2xl font-extrabold text-primary">
+      {{ brand.name|first }}
+    </div>
+    {% endif %}
+    <div class="min-w-0">
+      <h2 class="font-bold text-base leading-snug group-hover:text-primary transition-colors truncate">{{ brand.name }}</h2>
+      <div class="flex items-center gap-2 mt-1">
+        <span class="inline-flex items-center rounded-full bg-base-200 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-base-content/50">
+          {{ brand.get_category_display }}
+        </span>
+        {% if brand.domain %}
+        <span class="text-xs text-base-content/35 truncate">{{ brand.domain }}</span>
+        {% endif %}
+      </div>
+    </div>
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-auto shrink-0 text-base-content/20 group-hover:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-24">
+  <p class="text-lg font-medium text-base-content/40">No brands yet.</p>
+  <p class="text-sm text-base-content/30 mt-1">Check back soon.</p>
+</div>
+{% endif %}
+{% endblock %}

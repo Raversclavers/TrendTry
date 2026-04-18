@@ -1,16 +1,18 @@
 {# Newsletter signup — include anywhere. Uses HTMX for no-reload submit. #}
-<div class="card bg-base-200 border border-base-300">
-  <div class="card-body items-center text-center gap-3">
-    <h3 class="font-semibold text-lg">Stay in the loop</h3>
-    <p class="text-sm text-base-content/60">Get trending products & deals in your inbox.</p>
-    <form hx-post="{% url 'catalog:subscribe' %}" hx-target="#subscribe-result" hx-swap="innerHTML"
-          class="flex gap-2 w-full max-w-sm">
-      {% csrf_token %}
-      <input type="hidden" name="source_page" value="{{ request.path }}">
-      <input type="email" name="email" required placeholder="you@example.com"
-             class="input input-bordered flex-1">
-      <button type="submit" class="btn btn-primary btn-sm">Subscribe</button>
-    </form>
-    <div id="subscribe-result" class="text-sm"></div>
+<div class="text-center">
+  <div class="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary mb-4">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+    Newsletter
   </div>
+  <h3 class="text-xl font-bold tracking-tight">Stay in the loop</h3>
+  <p class="mt-2 text-sm text-base-content/50 max-w-xs mx-auto">Get trending products, comparisons & deals delivered to your inbox.</p>
+  <form hx-post="{% url 'catalog:subscribe' %}" hx-target="#subscribe-result" hx-swap="innerHTML"
+        class="mt-6 flex gap-2 max-w-sm mx-auto">
+    {% csrf_token %}
+    <input type="hidden" name="source_page" value="{{ request.path }}">
+    <input type="email" name="email" required placeholder="you@example.com"
+           class="input input-bordered flex-1 bg-base-100" aria-label="Email address">
+    <button type="submit" class="btn btn-primary shadow-sm shadow-primary/15">Subscribe</button>
+  </form>
+  <div id="subscribe-result" class="mt-3 text-sm min-h-[1.5rem]"></div>
 </div>

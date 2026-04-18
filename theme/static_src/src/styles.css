@@ -1,11 +1,86 @@
 @import "tailwindcss";
-@plugin "daisyui";
 
-/**
-  * A catch-all path to Django template files, JavaScript, and Python files
-  * that contain Tailwind CSS classes and will be scanned by Tailwind to generate the final CSS file.
-  *
-  * If your final CSS file is not being updated after code changes, you may want to broaden or narrow
-  * the scope of this path.
-  */
 @source "../../../**/*.{html,py,js}";
+
+/* ─── Custom design tokens ─── */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    background-color: #f9fafb;
+    color: #18181b;
+  }
+
+  h1, .h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.2em;
+    line-height: 1.1;
+  }
+  h2, .h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1em;
+    line-height: 1.2;
+  }
+  h3, .h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-bottom: 0.7em;
+    line-height: 1.3;
+  }
+
+  /* Improved focus rings for accessibility */
+  :focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+  }
+}
+
+/* ─── Smooth transitions for interactive elements ─── */
+@layer components {
+  .card-hover {
+    transition: transform 0.2s cubic-bezier(.4,0,.2,1), box-shadow 0.2s cubic-bezier(.4,0,.2,1), border-color 0.2s cubic-bezier(.4,0,.2,1);
+  }
+  .card-hover:hover {
+    transform: translateY(-4px) scale(1.015);
+    box-shadow: 0 16px 32px -8px rgba(37,99,235,0.08);
+    border-color: #2563eb;
+  }
+
+  .btn, .btn-primary, .btn-outline {
+    font-weight: 600;
+    border-radius: 0.75rem;
+    letter-spacing: 0.01em;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+
+  .badge {
+    border-radius: 9999px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    padding-left: 0.75em;
+    padding-right: 0.75em;
+    font-size: 0.85em;
+  }
+
+  .input, .input-bordered {
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    padding: 0.75em 1em;
+  }
+
+  .prose {
+    color: #18181b;
+    max-width: 65ch;
+    line-height: 1.7;
+  }
+}

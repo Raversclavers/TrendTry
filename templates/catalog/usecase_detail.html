@@ -3,54 +3,56 @@
 {% block title %}{{ usecase.title }} — TrendTry{% endblock %}
 
 {% block content %}
-<!-- Breadcrumb -->
-<div class="breadcrumbs text-sm mb-6">
-  <ul>
-    <li><a href="{% url 'catalog:home' %}">Home</a></li>
-    <li>{{ usecase.title }}</li>
-  </ul>
-</div>
+{# Breadcrumb #}
+<nav class="mb-8 sm:mb-10" aria-label="Breadcrumb">
+  <ol class="flex flex-wrap items-center gap-1.5 text-sm text-base-content/40">
+    <li><a href="{% url 'catalog:home' %}" class="hover:text-base-content transition-colors">Home</a></li>
+    <li class="before:content-['/'] before:mx-1.5 text-base-content/70 font-medium">{{ usecase.title }}</li>
+  </ol>
+</nav>
 
-<h1 class="text-3xl font-bold mb-2">{{ usecase.title }}</h1>
-
-<!-- Meta badges -->
-<div class="flex flex-wrap gap-3 mb-8">
-  <div class="badge badge-lg badge-outline">Audience: {{ usecase.audience }}</div>
-  <div class="badge badge-lg badge-outline">Budget: up to ${{ usecase.budget_max }}</div>
-</div>
-
-<!-- Top Picks -->
-<h2 class="text-xl font-semibold mb-4">Top Picks</h2>
-{% with picks=usecase.top_picks.all %}
-{% if picks %}
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-  {% for product in picks %}
-  <div class="card bg-base-100 shadow-md border border-base-300">
-    {% if product.image_url %}
-    <figure><img src="{{ product.image_url }}" alt="{{ product.title }}" class="h-48 w-full object-cover"></figure>
-    {% endif %}
-    <div class="card-body">
-      <h3 class="card-title text-base">{{ product.title }}</h3>
-      <p class="text-xs text-base-content/50">{{ product.brand.name }}</p>
-      <div class="card-actions justify-between items-center mt-2">
-        <span class="font-semibold">{{ product.currency }} {{ product.price }}</span>
-        <a href="{{ product.get_absolute_url }}" class="btn btn-sm btn-outline">View</a>
-      </div>
-    </div>
+<div class="mb-12 sm:mb-16">
+  <span class="inline-block text-xs font-semibold uppercase tracking-wider text-primary mb-3">Buying Guide</span>
+  <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">{{ usecase.title }}</h1>
+  <div class="flex flex-wrap items-center gap-3 mt-4">
+    <span class="inline-flex items-center gap-1.5 rounded-full bg-base-200 px-3 py-1 text-sm text-base-content/60">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+      {{ usecase.audience }}
+    </span>
+    <span class="inline-flex items-center gap-1.5 rounded-full bg-base-200 px-3 py-1 text-sm text-base-content/60">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      Up to ${{ usecase.budget_max }}
+    </span>
   </div>
-  {% endfor %}
 </div>
-{% else %}
-<p class="text-base-content/50 mb-10">No picks yet.</p>
-{% endif %}
-{% endwith %}
 
-<!-- Cautions -->
+{# Top Picks #}
+<div class="mb-14 sm:mb-18">
+  <span class="text-xs font-semibold uppercase tracking-wider text-base-content/40 mb-5 block">Top Picks</span>
+  {% with picks=usecase.top_picks.all %}
+  {% if picks %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+    {% for product in picks %}
+      {% include "catalog/includes/_product_card.html" with product=product trend_entry=None %}
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="text-base-content/40">No picks yet.</p>
+  {% endif %}
+  {% endwith %}
+</div>
+
+{# Cautions #}
 {% if usecase.cautions %}
-<div class="card bg-warning/10 border border-warning/20">
-  <div class="card-body">
-    <h2 class="card-title">Cautions</h2>
-    <div class="prose max-w-none">{{ usecase.cautions|linebreaksbr }}</div>
+<div class="rounded-2xl border border-amber-200 bg-amber-50/50 p-6 sm:p-8">
+  <div class="flex items-start gap-4">
+    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+    </div>
+    <div>
+      <h2 class="text-base font-bold text-amber-900 mb-2">Cautions</h2>
+      <div class="text-sm text-amber-800/80 leading-relaxed">{{ usecase.cautions|linebreaksbr }}</div>
+    </div>
   </div>
 </div>
 {% endif %}

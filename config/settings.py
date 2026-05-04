@@ -1,17 +1,23 @@
 import environ
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env(
     DEBUG=(bool, False),
-    ALLOWED_HOSTS=(list, []),
+    ALLOWED_HOSTS=(list, ["localhost", "127.0.0.1"]),
 )
 environ.Env.read_env(BASE_DIR / ".env")
 
-SECRET_KEY = env("SECRET_KEY")
+SECRET_KEY = env("SECRET_KEY", default="changeme-set-a-real-secret-key-in-railway")
 DEBUG = env("DEBUG")
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
+
+# Auto-add Railway's assigned domain so the healthcheck passes
+_railway_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "")
+if _railway_domain and _railway_domain not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(_railway_domain)
 
 # ---------------------------------------------------------------------------
 # Apps
@@ -34,7 +40,7 @@ INSTALLED_APPS = [
 ]
 
 TAILWIND_APP_NAME = "theme"
-NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
+NPM_BIN_PATH = env("NPM_BIN_PATH", default=r"C:\Program Files\nodejs\npm.cmd")
 
 # ---------------------------------------------------------------------------
 # Middleware

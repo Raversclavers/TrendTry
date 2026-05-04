@@ -14,10 +14,15 @@ SECRET_KEY = env("SECRET_KEY", default="changeme-set-a-real-secret-key-in-railwa
 DEBUG = env("DEBUG")
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
 
-# Auto-add Railway's assigned domain so the healthcheck passes
-_railway_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "")
-if _railway_domain and _railway_domain not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append(_railway_domain)
+# Railway sends healthcheck requests with Host: healthcheck.railway.app,
+# not the public domain — both must be allowed.
+_railway_hosts = [
+    os.environ.get("RAILWAY_PUBLIC_DOMAIN", ""),
+    "healthcheck.railway.app",
+]
+for _host in _railway_hosts:
+    if _host and _host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(_host)
 
 # ---------------------------------------------------------------------------
 # Apps

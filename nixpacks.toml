@@ -1,0 +1,8 @@
+[phases.build]
+cmds = [
+  "pip install -r requirements.txt",
+  "python manage.py collectstatic --noinput"
+]
+
+[phases.deploy]
+cmds = ["python manage.py migrate --noinput"]

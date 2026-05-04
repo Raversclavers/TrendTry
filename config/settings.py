@@ -24,6 +24,13 @@ for _host in _railway_hosts:
     if _host and _host not in ALLOWED_HOSTS:
         ALLOWED_HOSTS.append(_host)
 
+# CSRF trusted origins — Django 4+ requires the scheme + host for POST
+# requests (admin login, HTMX subscribe form, etc.) to pass CSRF checks.
+CSRF_TRUSTED_ORIGINS = []
+_railway_public = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "")
+if _railway_public:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{_railway_public}")
+
 # ---------------------------------------------------------------------------
 # Apps
 # ---------------------------------------------------------------------------

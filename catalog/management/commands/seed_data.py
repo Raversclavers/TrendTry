@@ -7,7 +7,9 @@ and prices stay fresh; brands/trends/comparisons/usecases use get_or_create
 so manual edits in admin are preserved.
 """
 
+import os
 from decimal import Decimal
+from urllib.parse import quote_plus
 
 from django.core.management.base import BaseCommand
 from django.utils import timezone
@@ -22,10 +24,52 @@ from catalog.models import (
     UseCasePage,
 )
 
+# Brand color palette for placeholder images — matches each brand's
+# recognizable colors so cards look intentional rather than generic.
+BRAND_COLORS = {
+    "Grovemade": ("3d2817", "f5e6d3"),
+    "Keychron": ("1a1a1a", "f7c948"),
+    "Orbitkey": ("2c3e50", "ecf0f1"),
+    "BenQ": ("6c2bd9", "ffffff"),
+    "Logitech": ("00b8fc", "ffffff"),
+    "Elgato": ("1f1f1f", "0099ff"),
+    "Shure": ("000000", "00aeef"),
+    "Rode": ("c41e3a", "ffffff"),
+    "Sony": ("000000", "ffffff"),
+    "Apple": ("1d1d1f", "ffffff"),
+    "DJI": ("000000", "0099ff"),
+    "Insta360": ("ff6900", "ffffff"),
+    "Aputure": ("0066cc", "ffffff"),
+    "Anker": ("00b8d9", "ffffff"),
+    "Govee": ("4a90e2", "ffffff"),
+    "Wooting": ("ff6600", "ffffff"),
+    "Razer": ("000000", "44d62c"),
+    "Nanoleaf": ("1a1a2e", "00d9ff"),
+}
 
-def _img(seed: str, w: int = 800, h: int = 800) -> str:
-    """Stable placeholder image URL with a unique seed per product."""
-    return f"https://picsum.photos/seed/{slugify(seed)}/{w}/{h}"
+
+def _img(brand: str, title: str, w: int = 800, h: int = 800) -> str:
+    """Branded placeholder showing product name on the brand's colors.
+
+    Override per-product via the admin once you've sourced real product
+    photography — templates render whatever URL is in `image_url`.
+    """
+    bg, fg = BRAND_COLORS.get(brand, ("1a1a2e", "ffffff"))
+    label = title.replace(brand, "").strip().replace(" ", "+") or brand.replace(" ", "+")
+    return f"https://placehold.co/{w}x{h}/{bg}/{fg}?text={quote_plus(label)}&font=inter"
+
+
+def _amazon(title: str) -> str:
+    """Amazon search URL with optional Associates tag.
+
+    Set AMAZON_AFFILIATE_TAG env var to your Associates ID (e.g. "trendtry-20")
+    and every affiliate link automatically becomes a tagged search result page.
+    Without a tag set, the link still works — it just doesn't earn commission.
+    """
+    q = quote_plus(title)
+    tag = os.environ.get("AMAZON_AFFILIATE_TAG", "").strip()
+    base = f"https://www.amazon.com/s?k={q}"
+    return f"{base}&tag={tag}" if tag else base
 
 
 BRANDS = [
@@ -574,8 +618,10 @@ class Command(BaseCommand):
                     "brand": brand,
                     "price": p["price"],
                     "currency": "USD",
-                    "source_url": p["source_url"],
-                    "image_url": p.get("image_url") or _img(p["title"]),
+                    # source_url -> Amazon search so the link always resolves
+                    # to a real listing with current price/availability
+                    "source_url": _amazon(f"{p['brand']} {p['title']}"),
+                    "image_url": p.get("image_url") or _img(p["brand"], p["title"]),
                     "main_claims": p["main_claims"],
                     "specs": p["specs"],
                     "variants": p["variants"],
@@ -638,17 +684,21 @@ class Command(BaseCommand):
                         obj.top_picks.add(products[title])
             self.stdout.write(f"  UseCase: {obj.title} ({'created' if created else 'exists'})")
 
-        # Affiliate links
+        # Affiliate links — refresh URL on every run so AMAZON_AFFILIATE_TAG
+        # changes propagate. AffiliateRedirectView prefers AffiliateLink over
+        # source_url, so updating here is what actually changes outbound clicks.
         for product in products.values():
-            _, created = AffiliateLink.objects.get_or_create(
+            amazon_url = _amazon(f"{product.brand.name} {product.title}")
+            _, created = AffiliateLink.objects.update_or_create(
                 product=product,
                 defaults={
-                    "network_name": "Direct",
-                    "affiliate_url": product.source_url,
+                    "network_name": "Amazon",
+                    "affiliate_url": amazon_url,
                 },
             )
-            if created:
-                self.stdout.write(f"  AffiliateLink: {product.title}")
+            self.stdout.write(
+                f"  AffiliateLink: {product.title} ({'created' if created else 'updated'})"
+            )
 
         self.stdout.write("")
         self.stdout.write(self.style.SUCCESS("Seed data populated successfully!"))

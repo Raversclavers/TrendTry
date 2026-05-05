@@ -14,15 +14,21 @@ SECRET_KEY = env("SECRET_KEY", default="changeme-set-a-real-secret-key-in-railwa
 DEBUG = env("DEBUG")
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
 
-# Railway sends healthcheck requests with Host: healthcheck.railway.app,
-# not the public domain — both must be allowed.
-_railway_hosts = [
-    os.environ.get("RAILWAY_PUBLIC_DOMAIN", ""),
-    "healthcheck.railway.app",
-]
-for _host in _railway_hosts:
-    if _host and _host not in ALLOWED_HOSTS:
-        ALLOWED_HOSTS.append(_host)
+# Railway sends healthcheck requests with internal pod hostnames that
+# don't match the public domain. Since Railway terminates TLS at the
+# edge and routes by service identity (not host header), wildcard the
+# allowlist in production. Edge-level routing remains the security
+# boundary, not Django's host check.
+if not DEBUG:
+    ALLOWED_HOSTS = ["*"]
+else:
+    _railway_hosts = [
+        os.environ.get("RAILWAY_PUBLIC_DOMAIN", ""),
+        "healthcheck.railway.app",
+    ]
+    for _host in _railway_hosts:
+        if _host and _host not in ALLOWED_HOSTS:
+            ALLOWED_HOSTS.append(_host)
 
 # CSRF trusted origins — Django 4+ requires the scheme + host for POST
 # requests (admin login, HTMX subscribe form, etc.) to pass CSRF checks.

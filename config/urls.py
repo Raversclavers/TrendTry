@@ -17,10 +17,18 @@ Including another URLconf
 
 from django.contrib import admin
 from django.contrib.sitemaps.views import sitemap
+from django.http import HttpResponse
 from django.urls import include, path
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
 
 from catalog.sitemaps import ComparisonSitemap, ProductSitemap, UseCasePageSitemap
+
+
+@csrf_exempt
+def healthcheck(_request):
+    """Liveness probe — no DB query, no host check, no template render."""
+    return HttpResponse("ok", content_type="text/plain")
 
 sitemaps = {
     "products": ProductSitemap,
@@ -29,6 +37,7 @@ sitemaps = {
 }
 
 urlpatterns = [
+    path("healthz", healthcheck),
     path("admin/", admin.site.urls),
     path(
         "sitemap.xml",

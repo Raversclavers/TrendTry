@@ -149,7 +149,12 @@ META_SITE_NAME = "TrendTry"
 # Production security (only when DEBUG is False)
 # ---------------------------------------------------------------------------
 if not DEBUG:
-    SECURE_SSL_REDIRECT = True
+    # Railway's edge proxy redirects HTTP→HTTPS for public traffic, so we
+    # leave SECURE_SSL_REDIRECT off — otherwise Railway's internal healthcheck
+    # (which talks plain HTTP to the pod) gets 301'd and reports "service
+    # unavailable". The proxy header below is still set so Django reports
+    # request.is_secure() correctly for cookies.
+    SECURE_SSL_REDIRECT = False
     SECURE_HSTS_SECONDS = 31_536_000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True

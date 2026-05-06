@@ -285,14 +285,35 @@ class Command(BaseCommand):
                 timeout=45,
             )
             if resp.status_code != 200:
+                self.stdout.write(self.style.ERROR(
+                    f"    /scrape API {resp.status_code}: {resp.text[:150]}"
+                ))
                 return ""
-            meta = (resp.json().get("data") or {}).get("metadata") or {}
-            for key in ("ogImage", "og:image", "image", "twitterImage"):
+            data = resp.json().get("data") or {}
+            meta = data.get("metadata") or {}
+            # Firecrawl uses several possible keys depending on how the page
+            # declared the image. Check all of them in order of preference.
+            for key in (
+                "ogImage", "og:image", "twitter:image", "twitterImage",
+                "image", "og_image", "mainImage", "thumbnailUrl",
+            ):
                 v = meta.get(key)
                 if isinstance(v, str) and v.startswith(("http://", "https://")):
                     return v
-        except requests.RequestException:
-            pass
+            # Last resort: any metadata key whose value is an image URL
+            for k, v in meta.items():
+                if (
+                    isinstance(v, str)
+                    and v.startswith(("http://", "https://"))
+                    and any(v.lower().endswith(ext) for ext in (".jpg", ".jpeg", ".png", ".webp", ".avif"))
+                ):
+                    return v
+            # Debug: dump the keys we DID see so we can fix the next miss
+            self.stdout.write(self.style.WARNING(
+                f"    metadata keys: {list(meta.keys())[:10]}"
+            ))
+        except requests.RequestException as exc:
+            self.stdout.write(self.style.ERROR(f"    /scrape error: {exc}"))
         return ""
 
     def _poll_for_result(self, job_id, headers):

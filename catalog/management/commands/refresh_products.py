@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 import requests
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from django.db import close_old_connections
+from django.db import connection
 from django.db.models import Q
 from django.utils import timezone
 
@@ -56,6 +56,14 @@ class Command(BaseCommand):
             default=0,
             help="Max products to process (0 = all)",
         )
+        parser.add_argument(
+            "--images-only",
+            action="store_true",
+            help=(
+                "Skip the expensive /extract call (LLM-based, ~5 credits) "
+                "and only fetch og:image via /scrape (~1 credit per product)."
+            ),
+        )
 
     def handle(self, *args, **options):
         api_key = getattr(settings, "FIRECRAWL_API_KEY", None) or ""
@@ -94,9 +102,12 @@ class Command(BaseCommand):
             # Drop any DB connection killed by Railway's Postgres proxy idle
             # timeout during the previous Firecrawl poll. Django opens a
             # fresh one on the next query.
-            close_old_connections()
+            connection.close()
             try:
-                changes = self._refresh_one(product, headers)
+                if options["images_only"]:
+                    changes = self._refresh_image_only(product, headers)
+                else:
+                    changes = self._refresh_one(product, headers)
                 refreshed += 1
                 total_changes += changes
             except Exception as exc:
@@ -144,7 +155,7 @@ class Command(BaseCommand):
         # open a fresh one for the writes below.
         if resp_json.get("success") and "id" in resp_json:
             resp_json = self._poll_for_result(resp_json["id"], headers)
-            close_old_connections()
+            connection.close()
 
         # Save raw response
         domain = urlparse(product.source_url).netloc
@@ -226,6 +237,35 @@ class Command(BaseCommand):
         if changes == 0:
             self.stdout.write(self.style.SUCCESS("    No changes"))
         return changes
+
+    def _refresh_image_only(self, product, headers):
+        """Cheap path: only fetch og:image via /scrape, skip /extract entirely.
+
+        Costs ~1 Firecrawl credit per product instead of ~5.
+        """
+        new_image = self._fetch_og_image(product.source_url, headers)
+        connection.close()
+        if not new_image:
+            self.stdout.write(self.style.WARNING("    no og:image"))
+            product.last_crawled = timezone.now()
+            product.save(update_fields=["last_crawled"])
+            return 0
+        if new_image == product.image_url:
+            self.stdout.write(self.style.SUCCESS("    No changes"))
+            product.last_crawled = timezone.now()
+            product.save(update_fields=["last_crawled"])
+            return 0
+        ProductChangeLog.objects.create(
+            product=product,
+            field_name="image_url",
+            old_value=product.image_url or "",
+            new_value=new_image,
+        )
+        product.image_url = new_image
+        product.last_crawled = timezone.now()
+        product.save(update_fields=["image_url", "last_crawled"])
+        self.stdout.write(self.style.WARNING("    CHANGED: image_url"))
+        return 1
 
     def _fetch_og_image(self, url, headers):
         """Use Firecrawl /scrape to grab the page's og:image — the canonical

@@ -35,8 +35,8 @@ class Product(models.Model):
     )
     price = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(max_length=3, default="USD")
-    image_url = models.URLField(blank=True)
-    source_url = models.URLField(blank=True)
+    image_url = models.URLField(blank=True, max_length=500)
+    source_url = models.URLField(blank=True, max_length=500)
     main_claims = models.TextField(blank=True)
     specs = models.JSONField(default=dict, blank=True)
     variants = models.JSONField(default=list, blank=True)
@@ -45,7 +45,7 @@ class Product(models.Model):
     # SEO
     meta_title = models.CharField(max_length=70, blank=True)
     meta_description = models.CharField(max_length=160, blank=True)
-    og_image = models.URLField(blank=True)
+    og_image = models.URLField(blank=True, max_length=500)
 
     class Meta:
         ordering = ["-id"]
@@ -108,7 +108,7 @@ class Comparison(models.Model):
     # SEO
     meta_title = models.CharField(max_length=70, blank=True)
     meta_description = models.CharField(max_length=160, blank=True)
-    og_image = models.URLField(blank=True)
+    og_image = models.URLField(blank=True, max_length=500)
 
     class Meta:
         ordering = ["-created_at"]
@@ -131,7 +131,7 @@ class UseCasePage(models.Model):
     # SEO
     meta_title = models.CharField(max_length=70, blank=True)
     meta_description = models.CharField(max_length=160, blank=True)
-    og_image = models.URLField(blank=True)
+    og_image = models.URLField(blank=True, max_length=500)
 
     class Meta:
         ordering = ["-created_at"]

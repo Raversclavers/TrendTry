@@ -1,8 +1,9 @@
 import json
+import re
 import time
 from datetime import timedelta
 from decimal import Decimal, InvalidOperation
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
 
 import requests
 from django.conf import settings
@@ -239,11 +240,15 @@ class Command(BaseCommand):
         return changes
 
     def _refresh_image_only(self, product, headers):
-        """Cheap path: only fetch og:image via /scrape, skip /extract entirely.
+        """Cheap path: fetch og:image via direct HTTP (free), fall back to
+        Firecrawl /scrape only if direct GET fails (rare — JS-only pages).
 
-        Costs ~1 Firecrawl credit per product instead of ~5.
+        For most product pages, og:image is in the initial HTML so a plain
+        requests.get + regex is enough. Costs zero credits.
         """
-        new_image = self._fetch_og_image(product.source_url, headers)
+        new_image = self._fetch_og_image_direct(product.source_url)
+        if not new_image:
+            new_image = self._fetch_og_image(product.source_url, headers)
         connection.close()
         if not new_image:
             self.stdout.write(self.style.WARNING("    no og:image"))
@@ -266,6 +271,56 @@ class Command(BaseCommand):
         product.save(update_fields=["image_url", "last_crawled"])
         self.stdout.write(self.style.WARNING("    CHANGED: image_url"))
         return 1
+
+    def _fetch_og_image_direct(self, url):
+        """Fetch og:image (or twitter:image) directly via HTTP — no Firecrawl
+        credits used. Works for any product page that declares the meta tag
+        in its initial HTML, which is essentially all of them.
+        """
+        try:
+            resp = requests.get(
+                url,
+                headers={
+                    "User-Agent": (
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                        "AppleWebKit/537.36 (KHTML, like Gecko) "
+                        "Chrome/120.0.0.0 Safari/537.36"
+                    ),
+                    "Accept": "text/html,application/xhtml+xml",
+                    "Accept-Language": "en-US,en;q=0.9",
+                },
+                timeout=20,
+                allow_redirects=True,
+            )
+            if resp.status_code != 200:
+                self.stdout.write(self.style.WARNING(
+                    f"    direct GET {resp.status_code}"
+                ))
+                return ""
+            html = resp.text
+            patterns = [
+                # property="og:image" content="..."
+                r'<meta[^>]+property=["\']og:image(?::secure_url)?["\'][^>]+content=["\']([^"\']+)["\']',
+                # content="..." property="og:image"
+                r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']og:image(?::secure_url)?["\']',
+                # name="twitter:image"
+                r'<meta[^>]+name=["\']twitter:image["\'][^>]+content=["\']([^"\']+)["\']',
+                r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+name=["\']twitter:image["\']',
+            ]
+            for pattern in patterns:
+                m = re.search(pattern, html, re.IGNORECASE)
+                if m:
+                    img = m.group(1).strip()
+                    # Resolve relative URLs
+                    if img.startswith("//"):
+                        img = "https:" + img
+                    elif img.startswith("/"):
+                        img = urljoin(url, img)
+                    if img.startswith(("http://", "https://")):
+                        return img
+        except requests.RequestException as exc:
+            self.stdout.write(self.style.WARNING(f"    direct GET failed: {exc}"))
+        return ""
 
     def _fetch_og_image(self, url, headers):
         """Use Firecrawl /scrape to grab the page's og:image — the canonical

@@ -7,12 +7,14 @@ from urllib.parse import urlparse
 import requests
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django.db import close_old_connections
 from django.db.models import Q
 from django.utils import timezone
 
 from catalog.models import Product, ProductChangeLog, RawCrawl
 
 FIRECRAWL_EXTRACT_URL = "https://api.firecrawl.dev/v1/extract"
+FIRECRAWL_SCRAPE_URL = "https://api.firecrawl.dev/v1/scrape"
 
 EXTRACT_SCHEMA = {
     "type": "object",
@@ -89,6 +91,10 @@ class Command(BaseCommand):
 
         for product in products:
             self.stdout.write(f"  [{refreshed + 1}/{len(products)}] {product.title}")
+            # Drop any DB connection killed by Railway's Postgres proxy idle
+            # timeout during the previous Firecrawl poll. Django opens a
+            # fresh one on the next query.
+            close_old_connections()
             try:
                 changes = self._refresh_one(product, headers)
                 refreshed += 1
@@ -111,8 +117,12 @@ class Command(BaseCommand):
         payload = {
             "urls": [product.source_url],
             "prompt": (
-                "Extract product information: product name, price, currency, "
-                "main marketing claims, ingredients or specs, and size variants."
+                "Extract product info: product name, price, currency, main "
+                "marketing claims, ingredients or specs, size variants, AND "
+                "all product image URLs visible on the page (full https:// "
+                "URLs only — no relative paths, no data: URIs, no thumbnails). "
+                "Prioritize the highest-resolution main product photo first "
+                "in the image_urls list."
             ),
             "schema": EXTRACT_SCHEMA,
         }
@@ -128,9 +138,13 @@ class Command(BaseCommand):
 
         resp_json = resp.json()
 
-        # Handle async job polling
+        # Handle async job polling — this blocks for up to 60s per product.
+        # Railway's Postgres proxy will close any idle connection in that
+        # window, so we drop the connection on the way out and let Django
+        # open a fresh one for the writes below.
         if resp_json.get("success") and "id" in resp_json:
             resp_json = self._poll_for_result(resp_json["id"], headers)
+            close_old_connections()
 
         # Save raw response
         domain = urlparse(product.source_url).netloc
@@ -184,22 +198,27 @@ class Command(BaseCommand):
                 else:
                     product.main_claims = new_normalised
 
-        # --- Image: take the first valid http(s) URL from image_urls ---
-        image_urls = data.get("image_urls") or []
-        if isinstance(image_urls, list):
-            for url in image_urls:
-                if isinstance(url, str) and url.startswith(("http://", "https://")):
-                    if url != product.image_url:
-                        ProductChangeLog.objects.create(
-                            product=product,
-                            field_name="image_url",
-                            old_value=product.image_url or "",
-                            new_value=url,
-                        )
-                        product.image_url = url
-                        self.stdout.write(self.style.WARNING("    CHANGED: image_url"))
-                        changes += 1
-                    break
+        # --- Image: prefer og:image from /scrape (social-share image, the
+        # highest-quality main product photo), fall back to the first valid
+        # http(s) URL from /extract's image_urls.
+        new_image = self._fetch_og_image(product.source_url, headers)
+        if not new_image:
+            image_urls = data.get("image_urls") or []
+            if isinstance(image_urls, list):
+                for url in image_urls:
+                    if isinstance(url, str) and url.startswith(("http://", "https://")):
+                        new_image = url
+                        break
+        if new_image and new_image != product.image_url:
+            ProductChangeLog.objects.create(
+                product=product,
+                field_name="image_url",
+                old_value=product.image_url or "",
+                new_value=new_image,
+            )
+            product.image_url = new_image
+            self.stdout.write(self.style.WARNING("    CHANGED: image_url"))
+            changes += 1
 
         product.last_crawled = timezone.now()
         product.save()
@@ -207,6 +226,34 @@ class Command(BaseCommand):
         if changes == 0:
             self.stdout.write(self.style.SUCCESS("    No changes"))
         return changes
+
+    def _fetch_og_image(self, url, headers):
+        """Use Firecrawl /scrape to grab the page's og:image — the canonical
+        social-share photo, almost always the main product image.
+
+        Returns a https URL or '' if nothing usable was found.
+        """
+        try:
+            resp = requests.post(
+                FIRECRAWL_SCRAPE_URL,
+                headers=headers,
+                json={
+                    "url": url,
+                    "formats": ["markdown"],
+                    "onlyMainContent": False,
+                },
+                timeout=45,
+            )
+            if resp.status_code != 200:
+                return ""
+            meta = (resp.json().get("data") or {}).get("metadata") or {}
+            for key in ("ogImage", "og:image", "image", "twitterImage"):
+                v = meta.get(key)
+                if isinstance(v, str) and v.startswith(("http://", "https://")):
+                    return v
+        except requests.RequestException:
+            pass
+        return ""
 
     def _poll_for_result(self, job_id, headers):
         """Poll the Firecrawl extract endpoint until the job completes."""

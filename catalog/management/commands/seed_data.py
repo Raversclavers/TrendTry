@@ -72,6 +72,15 @@ def _aliexpress(title: str) -> str:
     return f"{base}&aff_short_key={tag}" if tag else base
 
 
+def _google_shopping(title: str) -> str:
+    """Google Shopping search URL — Firecrawl scrapes these for real product
+    images, prices, and listings. We store this as Product.source_url so
+    refresh_products can extract authentic data without us hand-curating
+    one URL per product.
+    """
+    return f"https://www.google.com/search?tbm=shop&q={quote_plus(title)}"
+
+
 BRANDS = [
     {"name": "Grovemade", "domain": "grovemade.com", "category": "accessories"},
     {"name": "Keychron", "domain": "keychron.com", "category": "gadgets"},
@@ -618,9 +627,10 @@ class Command(BaseCommand):
                     "brand": brand,
                     "price": p["price"],
                     "currency": "USD",
-                    # source_url -> Amazon search so the link always resolves
-                    # to a real listing with current price/availability
-                    "source_url": _aliexpress(f"{p['brand']} {p['title']}"),
+                    # source_url -> Google Shopping so refresh_products can
+                    # scrape real product images via Firecrawl. Buyers never
+                    # see this URL — they click through AffiliateLink instead.
+                    "source_url": _google_shopping(f"{p['brand']} {p['title']}"),
                     "image_url": p.get("image_url") or _img(p["brand"], p["title"]),
                     "main_claims": p["main_claims"],
                     "specs": p["specs"],

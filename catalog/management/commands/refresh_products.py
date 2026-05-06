@@ -318,6 +318,13 @@ class Command(BaseCommand):
                         img = urljoin(url, img)
                     if img.startswith(("http://", "https://")):
                         return img
+            # Got 200 but no og:image pattern matched. Log what we DID see.
+            has_og = "og:image" in html
+            has_twitter = "twitter:image" in html
+            self.stdout.write(self.style.WARNING(
+                f"    direct GET 200 (len={len(html)}) "
+                f"og:image_in_html={has_og} twitter:image_in_html={has_twitter}"
+            ))
         except requests.RequestException as exc:
             self.stdout.write(self.style.WARNING(f"    direct GET failed: {exc}"))
         return ""

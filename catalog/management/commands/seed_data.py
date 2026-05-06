@@ -59,17 +59,17 @@ def _img(brand: str, title: str, w: int = 800, h: int = 800) -> str:
     return f"https://placehold.co/{w}x{h}/{bg}/{fg}?text={quote_plus(label)}&font=inter"
 
 
-def _amazon(title: str) -> str:
-    """Amazon search URL with optional Associates tag.
+def _aliexpress(title: str) -> str:
+    """AliExpress search URL with optional affiliate tracking parameter.
 
-    Set AMAZON_AFFILIATE_TAG env var to your Associates ID (e.g. "trendtry-20")
-    and every affiliate link automatically becomes a tagged search result page.
-    Without a tag set, the link still works — it just doesn't earn commission.
+    Set ALIEXPRESS_AFFILIATE_TAG env var to your AliExpress Portals tracking
+    ID and every affiliate link gets tagged for commission. Without a tag,
+    the link still works — it just doesn't earn yet.
     """
     q = quote_plus(title)
-    tag = os.environ.get("AMAZON_AFFILIATE_TAG", "").strip()
-    base = f"https://www.amazon.com/s?k={q}"
-    return f"{base}&tag={tag}" if tag else base
+    tag = os.environ.get("ALIEXPRESS_AFFILIATE_TAG", "").strip()
+    base = f"https://www.aliexpress.com/wholesale?SearchText={q}"
+    return f"{base}&aff_short_key={tag}" if tag else base
 
 
 BRANDS = [
@@ -620,7 +620,7 @@ class Command(BaseCommand):
                     "currency": "USD",
                     # source_url -> Amazon search so the link always resolves
                     # to a real listing with current price/availability
-                    "source_url": _amazon(f"{p['brand']} {p['title']}"),
+                    "source_url": _aliexpress(f"{p['brand']} {p['title']}"),
                     "image_url": p.get("image_url") or _img(p["brand"], p["title"]),
                     "main_claims": p["main_claims"],
                     "specs": p["specs"],
@@ -688,11 +688,11 @@ class Command(BaseCommand):
         # changes propagate. AffiliateRedirectView prefers AffiliateLink over
         # source_url, so updating here is what actually changes outbound clicks.
         for product in products.values():
-            amazon_url = _amazon(f"{product.brand.name} {product.title}")
+            amazon_url = _aliexpress(f"{product.brand.name} {product.title}")
             _, created = AffiliateLink.objects.update_or_create(
                 product=product,
                 defaults={
-                    "network_name": "Amazon",
+                    "network_name": "AliExpress",
                     "affiliate_url": amazon_url,
                 },
             )

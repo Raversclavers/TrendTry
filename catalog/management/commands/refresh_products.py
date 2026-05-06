@@ -184,6 +184,23 @@ class Command(BaseCommand):
                 else:
                     product.main_claims = new_normalised
 
+        # --- Image: take the first valid http(s) URL from image_urls ---
+        image_urls = data.get("image_urls") or []
+        if isinstance(image_urls, list):
+            for url in image_urls:
+                if isinstance(url, str) and url.startswith(("http://", "https://")):
+                    if url != product.image_url:
+                        ProductChangeLog.objects.create(
+                            product=product,
+                            field_name="image_url",
+                            old_value=product.image_url or "",
+                            new_value=url,
+                        )
+                        product.image_url = url
+                        self.stdout.write(self.style.WARNING("    CHANGED: image_url"))
+                        changes += 1
+                    break
+
         product.last_crawled = timezone.now()
         product.save()
 
